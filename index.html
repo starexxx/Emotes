@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <title>Emotes</title>
     <style>
         :root {
@@ -13,6 +14,7 @@
             --text-color: rgba(255, 255, 255);
             --button-bg: rgba(80, 167, 234);
             --button-text: rgba(255, 255, 255);
+            --search-bg: rgba(19, 19, 19);
         }
 
         * {
@@ -27,10 +29,63 @@
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
+        }
+        .header {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            position: relative;
+            margin-top: 10px;
+        }
+
+        .header h2 {
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .header-button {
+            color: var(--button-bg);
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 600px;
+            padding: 0 20px 15px;
+        }
+
+        .search-bar {
+            width: 100%;
+            background: var(--search-bg);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+        }
+
+        .search-bar .material-icons {
+            color: #aaa;
+            margin-right: 10px;
+        }
+
+        .search-bar input {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+            outline: none;
         }
 
         .container {
@@ -49,9 +104,15 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 15px;
+            border-radius: 20px;
             cursor: pointer;
             overflow: hidden;
+            transition: transform 0.2s, filter 0.2s;
+            position: relative;
+        }
+
+        .icon-box:active {
+            filter: brightness(0.7);
         }
 
         .icon-box img {
@@ -68,6 +129,17 @@
             transform: scale(1);
         }
 
+        .icon-box::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
         .popup {
             position: fixed;
             bottom: -105%;
@@ -75,23 +147,31 @@
             transform: translateX(-50%);
             width: 100%;
             max-width: 450px;
-            background: var(--popup-bg);
+            background: rgba(30, 30, 30);
             color: var(--text-color);
             padding: 15px;
             border-radius: 20px 20px 0 0;
             text-align: center;
-            transition: bottom 0.3s ease-in-out;
+            transition: bottom 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            z-index: 100;
+            opacity: 0;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
         }
 
         .popup img {
             width: 100px;
             height: 130px;
             margin-bottom: 10px;
+            animation: fadeIn 0.5s ease-out forwards;
         }
 
         .popup h3 {
             margin: 5px 0;
             font-size: 18px;
+            animation: slideUp 0.4s ease-out 0.1s forwards;
+            opacity: 0;
+            transform: translateY(20px);
         }
 
         .popup p {
@@ -99,13 +179,16 @@
             font-size: 14px;
             color: #aaa;
             user-select: text;
+            animation: slideUp 0.4s ease-out 0.2s forwards;
+            opacity: 0;
+            transform: translateY(20px);
         }
 
         .popup button {
             font-family: 'Inter', sans-serif;
             margin-top: 10px;
             width: 100%;
-            padding: 13px;
+            padding: 15px;
             border: none;
             background: var(--button-bg);
             color: var(--button-text);
@@ -113,6 +196,9 @@
             border-radius: 8px;
             cursor: pointer;
             transition: background 0.2s, transform 0.1s;
+            animation: slideUp 0.4s ease-out 0.3s forwards;
+            opacity: 0;
+            transform: translateY(20px);
         }
 
         .popup button:hover {
@@ -125,29 +211,164 @@
 
         .show-popup {
             bottom: 0;
+            opacity: 1;
         }
 
         ::selection {
             background-color: var(--icon-bg);
             color: var(--text-color);
         }
+
+        .error-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30,30,30,0.9);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 80%;
+            text-align: center;
+            z-index: 100;
+            animation: fadeInOut 3s ease-in-out forwards;
+            opacity: 0;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .sort-menu {
+            position: fixed;
+            top: 28%;
+            left: 28%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            border-radius: 20px;
+            max-width: 90%;
+            text-align: left;
+            z-index: 100;
+            display: none;
+            animation: fadeIn 0.3s ease-out forwards;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            background: rgba(19, 19, 19, 0.9);
+            backdrop-filter: blur(10px);
+        }
+
+        .sort-menu h3 {
+            margin-bottom: 15px;
+            animation: slideDown 0.2s ease-out forwards;
+        }
+
+        .sort-option {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background: transparent;
+            border: none;
+            text-align: left;
+            color: var(--text-color);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .sort-option:hover {
+            border: 1px solid #202020
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+            display: none;
+        }
+
+        .no-results {
+            width: 100%;
+            text-align: center;
+            padding: 20px;
+            color: #aaa;
+            font-size: 16px;
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
-    <h2><br>Starexx Emotes<br></h2>
+    <div class="header">
+        <button class="header-button" id="editButton">Edit</button>
+        <h2>Emotes</h2>
+        <button class="header-button" id="shareButton">Share</button>
+    </div>
+    
+    <div class="search-container">
+        <div class="search-bar">
+            <span class="material-icons">search</span>
+            <input type="text" placeholder="Search emotes..." id="searchInput">
+        </div>
+    </div>
+
     <div class="container" id="iconContainer"></div>
+    <div class="no-results" id="noResults">No emotes found</div>
 
     <div class="popup" id="popup">
         <img id="popupIcon" src="" alt="Icon">
         <h3 id="popupTitle">Name</h3>
         <p id="popupItemID">Item ID: 000000</p>
-        <button onclick="closePopup()">OK</button>
+        <button id="copyButton">Copy ID</button>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <div class="sort-menu" id="sortMenu">
+        <h3>Sort By</h3>
+        <button class="sort-option" data-sort="name-asc">Name (A-Z)</button>
+        <button class="sort-option" data-sort="name-desc"> Name (Z-A)</button>
+        <button class="sort-option" data-sort="id-asc">Item ID (Low to High)</button>
+        <button class="sort-option" data-sort="id-desc">Item ID (High to Low)</button>
     </div>
 
     <script>
         const URL = "https://raw.githubusercontent.com/starexxx/starexxx/refs/heads/main/app.json";
         const ICON_URL = "https://system.ffgarena.cloud/api/iconsff?image=";
         const DEFAULT_ICON = "https://system.ffgarena.cloud/api/iconsff?image=1001000100.png";
+        let emotesData = [];
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            document.body.appendChild(errorDiv);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 1000);
+        }
 
         function getSearchQuery() {
             const params = new URLSearchParams(window.location.search);
@@ -157,45 +378,61 @@
         async function fetchIcons() {
             try {
                 const response = await fetch(URL);
-                if (!response.ok) throw new Error("File not found");
+                if (!response.ok) throw new Error("Failed to load emotes data");
                 const data = await response.json();
-                const iconsData = data.filter(item => item["Icon_Name"].startsWith("Icon_Name_Emote"));
+                emotesData = data.filter(item => item["Icon_Name"].startsWith("Icon_Name_Emote"));
 
                 const searchQuery = getSearchQuery();
                 const container = document.getElementById("iconContainer");
                 container.innerHTML = "";
 
-                let filteredIcons = iconsData;
+                let filteredIcons = emotesData;
                 if (searchQuery) {
-                    filteredIcons = iconsData.filter(item => item.Name.toLowerCase().includes(searchQuery.toLowerCase()));
+                    filteredIcons = emotesData.filter(item => item.Name.toLowerCase().includes(searchQuery.toLowerCase()));
+                    document.getElementById("searchInput").value = searchQuery;
                 }
 
-                if (filteredIcons.length === 0) {
-                    container.innerHTML = `<p>No emotes found for "${searchQuery}"</p>`;
-                    return;
-                }
-
-                filteredIcons.forEach(item => {
-                    const div = document.createElement("div");
-                    div.classList.add("icon-box");
-
-                    const img = document.createElement("img");
-                    img.src = `${ICON_URL}${item.Item_ID}.png`;
-                    img.onerror = () => { img.src = DEFAULT_ICON; };
-
-                    img.onload = () => {
-                        img.classList.add("loaded");
-                    };
-
-                    div.appendChild(img);
-                    div.onclick = () => openPopup(item.Name, item.Item_ID, img.src);
-
-                    container.appendChild(div);
-                });
+                displayIcons(filteredIcons);
             } catch (error) {
                 console.error("Error fetching data:", error);
-                document.getElementById("iconContainer").innerHTML = `<p>Error loading emotes.</p>`;
+                showError("Error loading emotes. Please try again later.");
             }
+        }
+
+        function displayIcons(icons) {
+            const container = document.getElementById("iconContainer");
+            const noResults = document.getElementById("noResults");
+            container.innerHTML = "";
+
+            if (icons.length === 0) {
+                noResults.style.display = "block";
+                return;
+            } else {
+                noResults.style.display = "none";
+            }
+
+            icons.forEach(item => {
+                const div = document.createElement("div");
+                div.classList.add("icon-box");
+                div.setAttribute('data-name', item.Name);
+                div.setAttribute('data-id', item.Item_ID);
+
+                const img = document.createElement("img");
+                img.src = `${ICON_URL}${item.Item_ID}.png`;
+                img.onerror = () => { 
+                    img.src = DEFAULT_ICON;
+                    img.classList.add("loaded");
+                };
+
+                img.onload = () => {
+                    img.classList.add("loaded");
+                };
+
+                div.appendChild(img);
+                div.onclick = () => openPopup(item.Name, item.Item_ID, img.src);
+
+                container.appendChild(div);
+            });
         }
 
         function openPopup(name, id, imgSrc) {
@@ -203,11 +440,114 @@
             document.getElementById("popupItemID").textContent = "Item ID: " + id;
             document.getElementById("popupIcon").src = imgSrc;
             document.getElementById("popup").classList.add("show-popup");
+            document.getElementById("overlay").style.display = "block";
         }
 
         function closePopup() {
             document.getElementById("popup").classList.remove("show-popup");
+            document.getElementById("overlay").style.display = "none";
         }
+
+        function openSortMenu() {
+            document.getElementById("sortMenu").style.display = "block";
+            document.getElementById("overlay").style.display = "block";
+        }
+
+        function closeSortMenu() {
+            document.getElementById("sortMenu").style.display = "none";
+            document.getElementById("overlay").style.display = "none";
+        }
+
+        function sortIcons(sortType) {
+            let sortedData = [...emotesData];
+            
+            switch(sortType) {
+                case 'name-asc':
+                    sortedData.sort((a, b) => a.Name.localeCompare(b.Name));
+                    break;
+                case 'name-desc':
+                    sortedData.sort((a, b) => b.Name.localeCompare(a.Name));
+                    break;
+                case 'id-asc':
+                    sortedData.sort((a, b) => parseInt(a.Item_ID) - parseInt(b.Item_ID));
+                    break;
+                case 'id-desc':
+                    sortedData.sort((a, b) => parseInt(b.Item_ID) - parseInt(a.Item_ID));
+                    break;
+                default:
+                    break;
+            }
+            
+            displayIcons(sortedData);
+            closeSortMenu();
+        }
+
+        function shareURL() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Starexx Emotes',
+                    text: 'Check out these awesome emotes!',
+                    url: window.location.href
+                }).catch(err => {
+                    console.log('Error sharing:', err);
+                    copyToClipboard();
+                });
+            } else {
+                copyToClipboard();
+            }
+        }
+
+        function copyToClipboard() {
+            const el = document.createElement('textarea');
+            el.value = window.location.href;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showError('Link copied to clipboard!');
+        }
+
+        function copyID() {
+            const id = document.getElementById("popupItemID").textContent.replace("Item ID: ", "");
+            navigator.clipboard.writeText(id).then(() => {
+                showError('ID copied to clipboard!');
+            });
+            closePopup();
+        }
+
+        document.getElementById("searchInput").addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const icons = document.querySelectorAll('.icon-box');
+            const noResults = document.getElementById("noResults");
+            let hasResults = false;
+            
+            icons.forEach(icon => {
+                const title = icon.getAttribute('data-name').toLowerCase();
+                if (title.includes(searchTerm)) {
+                    icon.style.display = 'flex';
+                    hasResults = true;
+                } else {
+                    icon.style.display = 'none';
+                }
+            });
+
+            noResults.style.display = hasResults ? 'none' : 'block';
+        });
+
+        document.getElementById("editButton").addEventListener('click', openSortMenu);
+        document.getElementById("shareButton").addEventListener('click', shareURL);
+        document.getElementById("copyButton").addEventListener('click', copyID);
+
+        document.querySelectorAll('.sort-option').forEach(button => {
+            if (button.dataset.sort) {
+                button.addEventListener('click', () => sortIcons(button.dataset.sort));
+            }
+        });
+
+        document.getElementById("overlay").addEventListener('click', () => {
+            closePopup();
+            closeSortMenu();
+        });
 
         fetchIcons();
     </script>
